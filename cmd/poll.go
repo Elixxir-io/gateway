@@ -126,6 +126,7 @@ func (gw *Instance) Poll(clientRequest *pb.GatewayPoll) (
 	}
 
 	// Exclude the NDF and network round updates on client request
+	jww.WARN.Printf("[UDB NO GW] Disabled updates: %v", clientRequest.GetDisableUpdates())
 	if clientRequest.GetDisableUpdates() {
 		return &pb.GatewayPollResponse{
 			KnownRounds:   knownRounds,

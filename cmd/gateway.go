@@ -20,13 +20,14 @@ import (
 	"gitlab.com/elixxir/crypto/cmix"
 	"gitlab.com/elixxir/crypto/cyclic"
 	"gitlab.com/elixxir/crypto/hash"
+	"gitlab.com/elixxir/crypto/rsa"
 	"gitlab.com/elixxir/crypto/sih"
 	"gitlab.com/elixxir/gateway/storage"
 	"gitlab.com/elixxir/primitives/format"
 	"gitlab.com/elixxir/primitives/states"
 	"gitlab.com/xx_network/comms/connect"
 	"gitlab.com/xx_network/comms/messages"
-	"gitlab.com/xx_network/crypto/signature/rsa"
+	oldRsa "gitlab.com/xx_network/crypto/signature/rsa"
 	"gitlab.com/xx_network/crypto/xx"
 	"gitlab.com/xx_network/primitives/id"
 	"gitlab.com/xx_network/primitives/id/ephemeral"
@@ -209,7 +210,7 @@ func (gw *Instance) requestClientKeyHelper(msg *pb.SignedClientKeyRequest) (*pb.
 		return &pb.SignedKeyResponse{Error: err.Error()}, err
 	}
 
-	opts := rsa.NewDefaultOptions()
+	opts := oldRsa.NewDefaultOptions()
 	h := opts.Hash.New()
 
 	// Hash serialized response
@@ -218,7 +219,7 @@ func (gw *Instance) requestClientKeyHelper(msg *pb.SignedClientKeyRequest) (*pb.
 	hashedResponse := h.Sum(nil)
 
 	// Sign the response
-	signedResponse, err := rsa.Sign(rand.Reader,
+	signedResponse, err := oldRsa.Sign(rand.Reader,
 		gw.Comms.GetPrivateKey(), opts.Hash, hashedResponse, opts)
 	if err != nil {
 		errMsg := errors.Errorf("Could not sign key response: %v", err)
@@ -251,7 +252,7 @@ func (gw *Instance) requestClientKeyHelper(msg *pb.SignedClientKeyRequest) (*pb.
 	clientRsaPub := clientTransmissionConfirmation.RSAPubKey
 
 	// Assemble Client public key into rsa.PublicKey
-	userPublicKey, err := rsa.LoadPublicKeyFromPem([]byte(clientRsaPub))
+	userPublicKey, err := rsa.GetScheme().UnmarshalPublicKeyPEM([]byte(clientRsaPub))
 	if err != nil {
 		errMsg := errors.Errorf("Unable to decode client RSA Pub Key: %+v", err)
 		return &pb.SignedKeyResponse{Error: errMsg.Error()}, errMsg

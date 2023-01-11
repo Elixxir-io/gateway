@@ -15,7 +15,7 @@ import (
 	"gitlab.com/elixxir/primitives/authorizer"
 	"gitlab.com/xx_network/comms/connect"
 	"gitlab.com/xx_network/crypto/csprng"
-	rsa2 "gitlab.com/xx_network/crypto/signature/rsa"
+	oldRsa "gitlab.com/xx_network/crypto/signature/rsa"
 	"gitlab.com/xx_network/primitives/id"
 	"gorm.io/gorm"
 	"math/rand"
@@ -319,11 +319,11 @@ func loadHttpsCreds(db *storage.Storage) ([]byte, []byte, error) {
 // and sets the GatewayCertificate on the Instance object to be sent when
 // clients request it
 func (gw *Instance) setGatewayTlsCertificate(cert []byte) error {
-	opts := rsa2.NewDefaultOptions()
+	opts := oldRsa.NewDefaultOptions()
 	opts.Hash = crypto2.SHA256
 	h := opts.Hash.New()
 	h.Write(cert)
-	sig, err := rsa2.Sign(csprng.NewSystemRNG(), gw.Comms.GetPrivateKey(), hash.CMixHash, h.Sum(nil), opts)
+	sig, err := oldRsa.Sign(csprng.NewSystemRNG(), gw.Comms.GetPrivateKey(), hash.CMixHash, h.Sum(nil), opts)
 	if err != nil {
 		return err
 	}
